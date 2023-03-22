@@ -28,8 +28,8 @@ def upload():
 	os.environ["OPENAI_API_KEY"] = apikey
 	question = request.form['question']
 
-	filenames = ""
 	if input_text == "":
+		filenames = ""
 		if request.files['input_text']:
 			upload_files = request.files.getlist('input_text')
 
