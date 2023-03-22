@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<head>
+    <meta charset="utf-8">
+    <title>IndexGPT</title>
+    <style>
+        body {
+            background-color: #FFFFFF
+        }
+        .btn {
+            width: 20%;
+            text-align: center;
+        }
+		input[type="file"] {
+		    display: none;
+		    padding: 1rem 0rem;
+		}
+		.side {
+          display:flex;
+		}
+		.fileUploadBtn {
+		  display: inline-block;
+		  padding: 0rem 1rem;
+		  background: #369;
+		  color: #fff;
+		  cursor: pointer;
+		}
+		.filename{
+		  padding: 0rem 0rem;
+		}
+		.subtitle {
+          font-size: 18px;
+		}
+		.text {
+          font-size: 14px;
+		}
+		.subtext {
+          font-size: 12px;
+		}
+    </style>
+
+	<script>
+		window.onload = function() {
+			const fileInput = document.getElementById('input_text');
+			const filename = document.getElementById('filename');
+			console.log(filename.textContent);
+
+			fileInput.addEventListener('change', (event) => {
+				files = fileInput.files;
+				for (let i = 0; i < files.length; i++) {
+					filename.value = filename.value + files[i].name + " ";
+					console.log(filename.value);
+				}
+				//filename.textContent = file.files[0].name;
+				//filenames = file.files[0].name;
+			});
+			
+		}
+
+
+	</script>
+
+</head>
+
+<div id="title">
+	<h1>
+		IndexGPT
+	</h1>
+	<p class="subtitle">テキスト情報をベースにGPTに質問をするWebアプリです。</p>
+	<p class="text">＜使用方法＞<br>
+					(1)ファイルを選択でテキストファイルを選択します。<br>
+					(2)APIKEYを入力します。<br>
+					(3)質問を入力してSUBMITをクリックします。</p>
+	<p class="subtext">＜注意＞OpenAIのサーバーの状況で、数十秒待つことがあります。1分以上待つ場合は、ブラウザを読み込み直し、最初から実行してください。<br>
+						<質問のコツ＞選択したテキストの内容を質問するようにしてください。他の内容の場合は、間違った返答をする場合があります。</p>
+	
+</div>
+<hr />
+<form action="/upload" method="post" enctype="multipart/form-data">
+	<label class="fileUploadBtn" tabindex="0">
+		<input type="file" name="input_text" id="input_text"　accept="text/plain" multiple="multiple">ファイルを選択
+	</label>
+	<input id="filename" type="text" name="filename" size="50" value="{{filenames}}">
+	<!--<p id="filename" type="text" name="filename" size="50">{{filenames}}</p>-->
+	<br>
+	APIKEY：<input id="apikey" type="text" name="apikey" value="{{apikey}}" size="100" maxlength="400"><br>
+	Question：<br>
+	<!--<input id="question" type="text" name="question" value="{{question}}" size="100" maxlength="200"><br>-->
+	<textarea id="question" type="text" name="question" cols="100" rows="5">{{question}}</textarea><br>
+	
+	<button type="submit" class="btn">SUBMIT!!</button>
+	<button type="submit" class="btn" formaction="/clear">CLEAR</button>
+	<hr />
+</form>
+<p>Answer：</p>
+<p>{{output}}</p>
+
+
+
+
+{% endblock %}
