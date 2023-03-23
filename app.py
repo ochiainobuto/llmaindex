@@ -37,43 +37,43 @@ def upload():
 			for file in upload_files:
 				filenames = filenames + file.filename + ' '
 				input_text = input_text + file.stream.read().decode()
+	else:
+		documents = [Document(input_text)]
 
-	documents = [Document(input_text)]
+		# LLMPredictorの準備
+		llm_predictor = LLMPredictor(llm=OpenAI(
+		    temperature=0, # 温度
+		    model_name="text-davinci-003" # モデル名
+		))
 
-	# LLMPredictorの準備
-	llm_predictor = LLMPredictor(llm=OpenAI(
-	    temperature=0, # 温度
-	    model_name="text-davinci-003" # モデル名
-	))
+		# PromptHelperの準備
+		prompt_helper=PromptHelper(
+		    max_input_size=4000,  # LLM入力の最大トークン数
+		    num_output=256,  # LLM出力のトークン数
+		    chunk_size_limit=2000,  # チャンクのトークン数
+		    max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
+		    separator="。"  # セパレータ
+		)
 
-	# PromptHelperの準備
-	prompt_helper=PromptHelper(
-	    max_input_size=4000,  # LLM入力の最大トークン数
-	    num_output=256,  # LLM出力のトークン数
-	    chunk_size_limit=2000,  # チャンクのトークン数
-	    max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
-	    separator="。"  # セパレータ
-	)
+		# インデックスの作成
+		index = GPTSimpleVectorIndex(
+		    documents,  # ドキュメント
+		    llm_predictor=llm_predictor,  # LLMPredictor
+		    prompt_helper=prompt_helper  # PromptHelper
+		)
 
-	# インデックスの作成
-	index = GPTSimpleVectorIndex(
-	    documents,  # ドキュメント
-	    llm_predictor=llm_predictor,  # LLMPredictor
-	    prompt_helper=prompt_helper  # PromptHelper
-	)
+		# index = GPTSimpleVectorIndex(
+		#     documents=documents
+		# )
 
-	# index = GPTSimpleVectorIndex(
-	#     documents=documents
-	# )
+		if question != "":
+			output = index.query(question)
+			history.append("User: "+str(question))
+			#history.append(str(question))
+			history.append("System: "+str(output))
+			#history.append(str(output))
 
-	if question != "":
-		output = index.query(question)
-		history.append("User: "+str(question))
-		#history.append(str(question))
-		history.append("System: "+str(output))
-		#history.append(str(output))
-
-		print(history)
+			print(history)
 
 	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
 
