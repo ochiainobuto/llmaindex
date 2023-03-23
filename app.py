@@ -90,7 +90,7 @@ def clear():
 	filenames = ""
 	input_text = ""
 	output = ""
-	history = []History
+	history = []
 
 	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
 
