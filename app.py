@@ -24,8 +24,8 @@ def index(apikey="", question="", output=""):
 def upload():
 	global input_text,filenames,history
 
-	print("upload....")
-	sys.stdout.flush()
+	# print("upload....")
+	# sys.stdout.flush()
 
 	apikey = request.form['apikey']
 	os.environ["OPENAI_API_KEY"] = apikey
@@ -69,16 +69,16 @@ def upload():
 	    prompt_helper=prompt_helper  # PromptHelper
 	)
 
-	print("question: ", question)
-	sys.stdout.flush()
+	# print("question: ", question)
+	# sys.stdout.flush()
 
 	if question != "":
 		output = index.query(question)
 		history.append("User: "+str(question))
 		history.append("System: "+str(output))
 
-	print("output: ", output)
-	sys.stdout.flush()
+	# print("output: ", output)
+	# sys.stdout.flush()
 
 	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
 
