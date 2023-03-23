@@ -85,11 +85,12 @@ def clear():
 
 	apikey = request.form['apikey']
 	os.environ["OPENAI_API_KEY"] = apikey
+	input_text = ""
 	question = ""
 	filenames = ""
 	input_text = ""
 	output = ""
-	history = []
+	history = []History
 
 	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
 
