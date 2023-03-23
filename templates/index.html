@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>LlamaIndexGPT</title>
+    <title>IndexGPT</title>
     <style>
         body {
             background-color: #FFFFFF
@@ -85,17 +85,24 @@
 	<!--<p id="filename" type="text" name="filename" size="50">{{filenames}}</p>-->
 	<br>
 	APIKEY：<input id="apikey" type="text" name="apikey" value="{{apikey}}" size="100" maxlength="400"><br>
-	Question：<br>
+	User：<br>
 	<!--<input id="question" type="text" name="question" value="{{question}}" size="100" maxlength="200"><br>-->
 	<textarea id="question" type="text" name="question" cols="100" rows="5">{{question}}</textarea><br>
 	
 	<button type="submit" class="btn">SUBMIT!!</button>
 	<button type="submit" class="btn" formaction="/clear">CLEAR</button>
-	<hr />
 </form>
-<p>Answer：</p>
+<hr />
+<p>System：</p>
 <p>{{output}}</p>
-
+<br>
+<p>History</p>
+<hr />
+<div class="box">
+	{% for n in history %}
+    	<p>{{ n }}</p>
+    {% endfor %}
+</div>
 
 
 
