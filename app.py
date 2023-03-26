@@ -56,7 +56,7 @@ def upload():
 	# PromptHelperの準備
 	prompt_helper=PromptHelper(
 	    max_input_size=4000,  # LLM入力の最大トークン数
-	    num_output=256,  # LLM出力のトークン数
+	    num_output=2000,  # LLM出力のトークン数
 	    chunk_size_limit=2000,  # チャンクのトークン数
 	    max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
 	    separator="。"  # セパレータ
