@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
 from langchain import OpenAI
 
 import os
@@ -20,7 +20,7 @@ def index(apikey="", question="", output=""):
 	input_text = ""
 	return render_template('index.html')
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def upload():
 	global input_text,filenames,history
 
@@ -31,7 +31,7 @@ def upload():
 	os.environ["OPENAI_API_KEY"] = apikey
 	question = request.form['question']
 
-	print("input_text0", input_text)
+	print("input_text0: ", input_text)
 	sys.stdout.flush()
 
 	if input_text == "":
@@ -81,6 +81,7 @@ def upload():
 	# sys.stdout.flush()
 
 	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
+
 
 @app.route('/clear', methods=['POST'])
 def clear():
