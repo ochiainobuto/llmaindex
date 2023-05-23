@@ -5,7 +5,7 @@ import openai
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-from langchain import OpenAI
+#from langchain import OpenAI
 
 
 
