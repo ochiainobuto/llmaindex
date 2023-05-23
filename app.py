@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 
+from flask import Flask
+from langchain import OpenAI
 
 app = Flask(__name__)
 
