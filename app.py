@@ -54,32 +54,26 @@ def upload():
 
 	llm_predictor = LLMPredictor(llm=OpenAI(
 	    temperature=0, # 温度
-	    model_name=modelType # モデル名
+	    model_name=modelType, # モデル名
+	    max_tokens=1000
 	))
+	# define LLM
+	#llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="gpt-3.5-turbo", max_tokens=1000))
 
-	# llm_predictor = LLMPredictor(llm=OpenAI(
-	#     temperature=0, # 温度
-	#     model_name="text-davinci-003" # モデル名
-	# ))
-	# llm_predictor = LLMPredictor(llm=OpenAI(
-	#     temperature=0, # 温度
-	#     model_name="gpt-3.5-turbo"
-	# ))
-
-	# PromptHelperの準備
+	#PromptHelperの準備
 	if modelType=="gpt-3.5-turbo":
 		prompt_helper=PromptHelper(
-			max_input_size=6000,  # LLM入力の最大トークン数
-			num_output=2000,  # LLM出力のトークン数
-			chunk_size_limit=4000,  # チャンクのトークン数
+			max_input_size=4000,  # LLM入力の最大トークン数
+			num_output=256,  # LLM出力のトークン数
+			chunk_size_limit=2000,  # チャンクのトークン数
 			max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
 			separator="。"  # セパレータ
 		)
 	else:
 		prompt_helper=PromptHelper(
-			max_input_size=6000,  # LLM入力の最大トークン数
-			num_output=2000,  # LLM出力のトークン数
-			chunk_size_limit=4000,  # チャンクのトークン数
+			max_input_size=4000,  # LLM入力の最大トークン数
+			num_output=256,  # LLM出力のトークン数
+			chunk_size_limit=2000,  # チャンクのトークン数
 			max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
 			separator="。"  # セパレータ
 		)
