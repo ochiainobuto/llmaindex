@@ -4,8 +4,9 @@ import sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
 from langchain import OpenAI
 
-from llama_index import GPTSimpleVectorIndex, SimpleDirectoryReader, StringIterableReader,PromptHelper
+from llama_index import GPTVectorStoreIndex, SimpleDirectoryReader, StringIterableReader,PromptHelper
 from llama_index import Document, LLMPredictor
+from llama_index import StorageContext, load_index_from_storage
 
 app = Flask(__name__)
 input_text = ""
@@ -79,15 +80,18 @@ def upload():
 		)
 
 	try:
-		index = GPTSimpleVectorIndex.load_from_disk(indexnames + '.json')
+		# index = GPTVectorStoreIndex.load_from_disk(indexnames + '.json')
+		index = load_index_from_storage(indexnames + '.json')
 	except:
 		# インデックスの作成
-		index = GPTSimpleVectorIndex(
+		index = GPTVectorStoreIndex(
 			documents,  # ドキュメント
 			llm_predictor=llm_predictor,  # LLMPredictor
 			prompt_helper=prompt_helper  # PromptHelper
 		)
-		index.save_to_disk(indexnames + '.json')
+		# index.save_to_disk(indexnames + '.json')
+		index.storage_context.persist(persist_dir=indexnames + '.json')
+
 	# print("question: ", question)
 	# sys.stdout.flush()
 
