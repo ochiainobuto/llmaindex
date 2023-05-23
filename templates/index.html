@@ -44,6 +44,7 @@
 		window.onload = function() {
 			const fileInput = document.getElementById('input_text');
 			const filename = document.getElementById('filename');
+			//const model = document.getElementById('model');
 			console.log(filename.textContent);
 
 			fileInput.addEventListener('change', (event) => {
@@ -55,7 +56,7 @@
 				//filename.textContent = file.files[0].name;
 				//filenames = file.files[0].name;
 			});
-			
+			// document.getElementById('modelType').value = "gpt-4";
 		}
 
 
@@ -85,8 +86,16 @@
 	<!--<p id="filename" type="text" name="filename" size="50">{{filenames}}</p>-->
 	<br>
 	APIKEY：<input id="apikey" type="text" name="apikey" value="{{apikey}}" size="100" maxlength="400"><br>
+	
+	Model：
+	<select id="modelType" name="modelType">
+		<option value="text-davinci-003">text-davinci-003</option>
+		<option value="gpt-3.5-turbo" {% if modelType == 'gpt-3.5-turbo' %}selected{% endif %}>gpt-3.5-turbo</option>
+		<option value="gpt-4">gpt-4</option>
+		<option value="gpt-4-32k">gpt-4-32k</option>
+		</select><br>
+
 	User：<br>
-	<!--<input id="question" type="text" name="question" value="{{question}}" size="100" maxlength="200"><br>-->
 	<textarea id="question" type="text" name="question" cols="100" rows="5">{{question}}</textarea><br>
 	
 	<button type="submit" class="btn">SUBMIT!!</button>
