@@ -9,6 +9,7 @@ from llama_index import Document, LLMPredictor
 
 app = Flask(__name__)
 input_text = ""
+indexnames = ""
 filenames = ""
 history = []
 
@@ -22,7 +23,7 @@ def index(apikey="", question="", output=""):
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-	global input_text,filenames,history
+	global input_text,indexnames,filenames,history
 
 	# print("upload....")
 	# sys.stdout.flush()
@@ -30,6 +31,7 @@ def upload():
 	apikey = request.form['apikey']
 	os.environ["OPENAI_API_KEY"] = apikey
 	question = request.form['question']
+	modelType = request.form['modelType']
 
 	print("input_text0: ", input_text)
 	sys.stdout.flush()
@@ -41,34 +43,57 @@ def upload():
 			for file in upload_files:
 				filenames = filenames + file.filename + ' '
 				input_text = input_text + file.stream.read().decode()
+				filename = file.filename
+				indexnames = indexnames + file.filename.split('.')[0]
 
 	print("input_text1:", input_text)
 	sys.stdout.flush()
 
+	print(filenames)
 	documents = [Document(input_text)]
 
-	# LLMPredictorの準備
 	llm_predictor = LLMPredictor(llm=OpenAI(
 	    temperature=0, # 温度
-	    model_name="text-davinci-003" # モデル名
+	    model_name=modelType # モデル名
 	))
 
+	# llm_predictor = LLMPredictor(llm=OpenAI(
+	#     temperature=0, # 温度
+	#     model_name="text-davinci-003" # モデル名
+	# ))
+	# llm_predictor = LLMPredictor(llm=OpenAI(
+	#     temperature=0, # 温度
+	#     model_name="gpt-3.5-turbo"
+	# ))
+
 	# PromptHelperの準備
-	prompt_helper=PromptHelper(
-	    max_input_size=4000,  # LLM入力の最大トークン数
-	    num_output=2000,  # LLM出力のトークン数
-	    chunk_size_limit=2000,  # チャンクのトークン数
-	    max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
-	    separator="。"  # セパレータ
-	)
+	if modelType=="gpt-3.5-turbo":
+		prompt_helper=PromptHelper(
+			max_input_size=6000,  # LLM入力の最大トークン数
+			num_output=2000,  # LLM出力のトークン数
+			chunk_size_limit=4000,  # チャンクのトークン数
+			max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
+			separator="。"  # セパレータ
+		)
+	else:
+		prompt_helper=PromptHelper(
+			max_input_size=6000,  # LLM入力の最大トークン数
+			num_output=2000,  # LLM出力のトークン数
+			chunk_size_limit=4000,  # チャンクのトークン数
+			max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
+			separator="。"  # セパレータ
+		)
 
-	# インデックスの作成
-	index = GPTSimpleVectorIndex(
-	    documents,  # ドキュメント
-	    llm_predictor=llm_predictor,  # LLMPredictor
-	    prompt_helper=prompt_helper  # PromptHelper
-	)
-
+	try:
+		index = GPTSimpleVectorIndex.load_from_disk(indexnames + '.json')
+	except:
+		# インデックスの作成
+		index = GPTSimpleVectorIndex(
+			documents,  # ドキュメント
+			llm_predictor=llm_predictor,  # LLMPredictor
+			prompt_helper=prompt_helper  # PromptHelper
+		)
+		index.save_to_disk(indexnames + '.json')
 	# print("question: ", question)
 	# sys.stdout.flush()
 
@@ -77,15 +102,22 @@ def upload():
 		history.append("User: "+str(question))
 		history.append("System: "+str(output))
 
-	# print("output: ", output)
-	# sys.stdout.flush()
+		print("output: ", output)
+		sys.stdout.flush()
 
-	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
+	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history, modelType=modelType)
 
 
 @app.route('/clear', methods=['POST'])
 def clear():
-	global input_text,filenames,history
+	global input_text,indexnames,filenames,history
+
+	modelType = "gpt-3.5-turbo"
+	indexnames = ""
+	try:
+		os.remove(indexnames + '.json')
+	except:
+		pass
 
 	print("clear...")
 
@@ -98,7 +130,7 @@ def clear():
 	output = ""
 	history = []
 
-	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history)
+	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history, modelType=modelType)
 
 if __name__ == '__main__':
 	app.run()
