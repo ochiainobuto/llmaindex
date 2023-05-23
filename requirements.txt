@@ -1,7 +1,7 @@
 Flask==2.3.2
 gunicorn
 numpy==1.24.3
-llama_index
-langchain
 openai
+langchain
+llama_index
 gpt_index
