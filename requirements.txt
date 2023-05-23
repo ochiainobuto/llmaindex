@@ -4,3 +4,4 @@ numpy==1.24.3
 llama_index
 langchain
 openai
+gpt_index
