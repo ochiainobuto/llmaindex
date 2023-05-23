@@ -89,8 +89,8 @@
 	
 	Model：
 	<select id="modelType" name="modelType">
+		<option value="gpt-3.5-turbo" {% if "{{modelType}}" == 'gpt-3.5-turbo' %}selected{% endif %}>gpt-3.5-turbo</option>
 		<option value="text-davinci-003">text-davinci-003</option>
-		<option value="gpt-3.5-turbo" {% if modelType == 'gpt-3.5-turbo' %}selected{% endif %}>gpt-3.5-turbo</option>
 		<option value="gpt-4">gpt-4</option>
 		<option value="gpt-4-32k">gpt-4-32k</option>
 		</select><br>
