@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+import openai
+
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
