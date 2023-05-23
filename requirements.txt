@@ -3,5 +3,5 @@ gunicorn==20.0.4
 numpy==1.19.3
 gpt_index
 llama_index
-openai
-langchain
+langchain==0.0.88
+openai==0.26.1
