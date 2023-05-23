@@ -4,7 +4,7 @@ import sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
 from langchain import OpenAI
 
-from llama_index import GPTVectorStoreIndex, SimpleDirectoryReader, StringIterableReader,PromptHelper
+from llama_index import GPTSimpleVectorIndex, SimpleDirectoryReader, StringIterableReader,PromptHelper
 from llama_index import Document, LLMPredictor
 
 app = Flask(__name__)
@@ -79,10 +79,10 @@ def upload():
 		)
 
 	try:
-		index = GPTVectorStoreIndex.load_from_disk(indexnames + '.json')
+		index = GPTSimpleVectorIndex.load_from_disk(indexnames + '.json')
 	except:
 		# インデックスの作成
-		index = GPTVectorStoreIndex(
+		index = GPTSimpleVectorIndex(
 			documents,  # ドキュメント
 			llm_predictor=llm_predictor,  # LLMPredictor
 			prompt_helper=prompt_helper  # PromptHelper
