@@ -1,95 +1,130 @@
-from flask import Flask, request, abort
 import os
-
-from linebot import (
-    LineBotApi, WebhookHandler
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
-)
-
-from langchain import OpenAI
-
 import sys
+
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
+from langchain import OpenAI
 
 from llama_index import GPTSimpleVectorIndex, SimpleDirectoryReader, StringIterableReader,PromptHelper
 from llama_index import Document, LLMPredictor
 
-
 app = Flask(__name__)
+input_text = ""
+indexnames = ""
+filenames = ""
+history = []
+
+@app.route('/')
+def index(apikey="", question="", output=""):
+	print("index....")
+	global input_text,history
+
+	input_text = ""
+	return render_template('index.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+	global input_text,indexnames,filenames,history
+
+	# print("upload....")
+	# sys.stdout.flush()
+
+	apikey = request.form['apikey']
+	os.environ["OPENAI_API_KEY"] = apikey
+	question = request.form['question']
+	modelType = request.form['modelType']
+
+	print("input_text0: ", input_text)
+	sys.stdout.flush()
+
+	if input_text == "":
+		if request.files['input_text']:
+			upload_files = request.files.getlist('input_text')
+
+			for file in upload_files:
+				filenames = filenames + file.filename + ' '
+				input_text = input_text + file.stream.read().decode()
+				filename = file.filename
+				indexnames = indexnames + file.filename.split('.')[0]
+
+	print("input_text1:", input_text)
+	sys.stdout.flush()
+
+	print(filenames)
+	documents = [Document(input_text)]
+
+	# llm_predictor = LLMPredictor(llm=OpenAI(
+	#     temperature=0, # 温度
+	#     model_name=modelType, # モデル名
+	#     max_tokens=1000
+	# ))
+	# define LLM
+	llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="gpt-3.5-turbo", max_tokens=1000))
+
+	#PromptHelperの準備
+	if modelType=="gpt-3.5-turbo":
+		prompt_helper=PromptHelper(
+			max_input_size=4000,  # LLM入力の最大トークン数
+			num_output=256,  # LLM出力のトークン数
+			chunk_size_limit=2000,  # チャンクのトークン数
+			max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
+			separator="。"  # セパレータ
+		)
+	else:
+		prompt_helper=PromptHelper(
+			max_input_size=4000,  # LLM入力の最大トークン数
+			num_output=256,  # LLM出力のトークン数
+			chunk_size_limit=2000,  # チャンクのトークン数
+			max_chunk_overlap=0,  # チャンクオーバーラップの最大トークン数
+			separator="。"  # セパレータ
+		)
+
+	try:
+		index = GPTSimpleVectorIndex.load_from_disk(indexnames + '.json')
+	except:
+		# インデックスの作成
+		index = GPTSimpleVectorIndex(
+			documents,  # ドキュメント
+			llm_predictor=llm_predictor,  # LLMPredictor
+			prompt_helper=prompt_helper  # PromptHelper
+		)
+		index.save_to_disk(indexnames + '.json')
+	# print("question: ", question)
+	# sys.stdout.flush()
+
+	if question != "":
+		output = index.query(question)
+		history.append("User: "+str(question))
+		history.append("System: "+str(output))
+
+		print("output: ", output)
+		sys.stdout.flush()
+
+	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history, modelType=modelType)
 
 
-#環境変数取得
-ACCESS_TOKEN = os.environ["ACCESS_TOKEN"]
-CHANNEL_SECRET = os.environ["CHANNEL_SECRET"]
-line_bot_api = LineBotApi(ACCESS_TOKEN)
-handler = WebhookHandler(CHANNEL_SECRET)
+@app.route('/clear', methods=['POST'])
+def clear():
+	global input_text,indexnames,filenames,history
 
-@app.route("/")
-def hello_world():
-    return "hello world!"
+	modelType = "gpt-3.5-turbo"
+	indexnames = ""
+	try:
+		os.remove(indexnames + '.json')
+	except:
+		pass
 
-@app.route("/callback", methods=['POST'])
-def callback():
-    # get X-Line-Signature header value
-    signature = request.headers['X-Line-Signature']
+	print("clear...")
 
-    # get request body as text
-    body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+	apikey = request.form['apikey']
+	os.environ["OPENAI_API_KEY"] = apikey
+	input_text = ""
+	question = ""
+	filenames = ""
+	input_text = ""
+	output = ""
+	history = []
 
-    # handle webhook body
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        abort(400)
+	return render_template('index.html', apikey=apikey, question=question, output=output, filenames=filenames, history=history, modelType=modelType)
 
-    return 'OK'
-
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    # line_bot_api.reply_message(
-    #     event.reply_token,
-    #     TextSendMessage(text=event.message.text))
-
-    # 受信したメッセージのテキストを取得
-    text = event.message.text
-
-    # テキストに対する処理を実行
-    processed_text = process_text(text)
-
-    # 返信メッセージを作成して送信
-    reply_message = TextSendMessage(text=processed_text)
-    line_bot_api.reply_message(event.reply_token, reply_message)
-
-
-def process_text(text):
-    text = text + 'ありんす。'
-	# os.environ["OPENAI_API_KEY"] = apikey
-    question = text
-    modelType = 'gpt-3.5-turbo'
-
-	llm_predictor = LLMPredictor(llm=OpenAI(
-	    temperature=0, # 温度
-	    model_name=modelType # モデル名
-	))
-
-    prompt_helper=PromptHelper(
-        max_input_size=6000,  # LLM入力の最大トークン数
-        num_output=2000,  # LLM出力のトークン数
-        chunk_size_limit=4000,  # チャンクのトークン数
-        max_chunk_overlap=0,  # チャン
-    )
-
-    index = GPTSimpleVectorIndex.load_from_disk('data.json')
-    output = index.query(question)
-		
-    return output
-
-if __name__ == "__main__":
-#    app.run()
-    port = int(os.getenv("PORT"))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+	app.run()
